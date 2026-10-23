@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Login - AutoMecânica Pro{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-icon">🔧</div>
+            <h2>Acesso ao Sistema</h2>
+            <p>Entre com suas credenciais de operador ou mecânico</p>
+        </div>
+
+        <form action="{{ url_for('login') }}" method="POST" class="form-login">
+            <div class="form-group">
+                <label for="login">Usuário / Login:</label>
+                <input type="text" id="login" name="login" value="{{ login or '' }}" placeholder="Ex: admin" required autofocus>
+            </div>
+
+            <div class="form-group">
+                <label for="senha">Senha:</label>
+                <input type="password" id="senha" name="senha" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Entrar no Sistema</button>
+        </form>
+
+        <div class="login-help">
+            <p><strong>Usuários de Teste (Script SQL):</strong></p>
+            <code>admin / admin123</code> &bull; <code>carlos / carlos123</code> &bull; <code>ana / ana12345</code>
+        </div>
+    </div>
+</div>
+{% endblock %}

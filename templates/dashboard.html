@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Painel Principal - AutoMecânica Pro{% endblock %}
+
+{% block content %}
+<div class="dashboard-hero">
+    <h2>Olá, {{ usuario_logado }}! 👋</h2>
+    <p>Bem-vindo ao sistema de controle e agendamento da oficina mecânica. Todos os recursos estão prontos para uso.</p>
+</div>
+
+<!-- Cards de Resumo -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-data">
+            <span class="stat-number">{{ total_clientes }}</span>
+            <span class="stat-label">Clientes Cadastrados</span>
+        </div>
+        <a href="{{ url_for('clientes_view') }}" class="stat-link">Acessar Clientes &rarr;</a>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">🚗</div>
+        <div class="stat-data">
+            <span class="stat-number">{{ total_veiculos }}</span>
+            <span class="stat-label">Veículos no Pátio</span>
+        </div>
+        <a href="{{ url_for('veiculos_view') }}" class="stat-link">Acessar Veículos &rarr;</a>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-icon">📅</div>
+        <div class="stat-data">
+            <span class="stat-number">{{ total_agendamentos }}</span>
+            <span class="stat-label">Serviços Agendados</span>
+        </div>
+        <a href="{{ url_for('agendamentos_view') }}" class="stat-link">Ver Agendamentos &rarr;</a>
+    </div>
+</div>
+
+<div class="dashboard-recent">
+    <h3>Próximos Serviços na Fila (Ordenados por Data)</h3>
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Data</th>
+                <th>Cliente</th>
+                <th>Veículo</th>
+                <th>Serviço</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in proximos_servicos %}
+            <tr>
+                <td><strong>{{ s.data_agendamento }}</strong></td>
+                <td>{{ s.cliente_nome }}</td>
+                <td>{{ s.modelo }} ({{ s.placa }})</td>
+                <td>{{ s.descricao_servico }}</td>
+                <td><span class="badge-status status-{{ s.status }}">{{ s.status }}</span></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Nenhum serviço pendente na fila.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

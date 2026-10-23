@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Gerenciamento de Veículos - AutoMecânica Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>🚗 Gestão de Veículos</h2>
+        <p>Regra de Negócio: Todo veículo cadastrado deve estar associado a um cliente previamente cadastrado.</p>
+    </div>
+    <button class="btn btn-primary" onclick="abrirModal('modalNovoVeiculo')">+ Cadastrar Veículo</button>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Placa</th>
+                <th>Marca / Modelo</th>
+                <th>Ano</th>
+                <th>Cor</th>
+                <th>Cliente Associado (Proprietário)</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for v in veiculos %}
+            <tr>
+                <td><span class="badge-placa">{{ v.placa }}</span></td>
+                <td><strong>{{ v.marca }} {{ v.modelo }}</strong></td>
+                <td>{{ v.ano }}</td>
+                <td>{{ v.cor or 'Não informada' }}</td>
+                <td>
+                    <strong>👤 {{ v.cliente_nome }}</strong><br>
+                    <small class="text-muted">{{ v.cliente_telefone }}</small>
+                </td>
+                <td class="action-buttons">
+                    <button class="btn-edit" onclick='abrirModalEditarVeiculo({{ v.id }}, {{ v.cliente_id }}, {{ v.placa|tojson }}, {{ v.marca|tojson }}, {{ v.modelo|tojson }}, {{ v.ano }}, {{ (v.cor or "")|tojson }})'>✏️ Editar</button>
+                    <a href="{{ url_for('veiculos_excluir', id=v.id) }}" class="btn-delete" onclick="return confirm('Excluir este veículo?');">🗑️</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center">Nenhum veículo cadastrado no momento.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Novo Veículo com Associação Obrigatória a Cliente -->
+<div id="modalNovoVeiculo" class="modal">
+    <div class="modal-content">
+        <h3>Cadastrar Novo Veículo</h3>
+        <form action="{{ url_for('veiculos_novo') }}" method="POST">
+            <div class="form-group">
+                <label>Cliente Proprietário (Obrigatório) *:</label>
+                <select name="cliente_id" required>
+                    <option value="">-- Selecione o Cliente previamente cadastrado --</option>
+                    {% for c in clientes %}
+                        <option value="{{ c.id }}">{{ c.nome }}</option>
+                    {% endfor %}
+                </select>
+                <small class="form-hint">Regra: Deve ser associado a um cliente previamente cadastrado.</small>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Placa *:</label>
+                    <input type="text" name="placa" placeholder="Ex: BRA2E19" maxlength="7" required>
+                </div>
+                <div class="form-group">
+                    <label>Marca *:</label>
+                    <input type="text" name="marca" placeholder="Ex: Toyota" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Modelo *:</label>
+                    <input type="text" name="modelo" placeholder="Ex: Corolla XEi 2.0" required>
+                </div>
+                <div class="form-group">
+                    <label>Ano *:</label>
+                    <input type="number" name="ano" min="1886" max="2100" value="2022" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Cor:</label>
+                    <input type="text" name="cor" placeholder="Ex: Prata">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="fecharModal('modalNovoVeiculo')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar Veículo</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar Veículo -->
+<div id="modalEditarVeiculo" class="modal">
+    <div class="modal-content">
+        <h3>Editar Veículo</h3>
+        <form id="formEditarVeiculo" method="POST">
+            <div class="form-group">
+                <label>Cliente Proprietário (Obrigatório) *:</label>
+                <select id="edit_veiculo_cliente_id" name="cliente_id" required>
+                    <option value="">-- Selecione o Cliente --</option>
+                    {% for c in clientes %}
+                        <option value="{{ c.id }}">{{ c.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Placa *:</label>
+                    <input type="text" id="edit_veiculo_placa" name="placa" maxlength="7" required>
+                </div>
+                <div class="form-group">
+                    <label>Marca *:</label>
+                    <input type="text" id="edit_veiculo_marca" name="marca" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Modelo *:</label>
+                    <input type="text" id="edit_veiculo_modelo" name="modelo" required>
+                </div>
+                <div class="form-group">
+                    <label>Ano *:</label>
+                    <input type="number" id="edit_veiculo_ano" name="ano" min="1886" max="2100" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Cor:</label>
+                    <input type="text" id="edit_veiculo_cor" name="cor">
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="fecharModal('modalEditarVeiculo')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

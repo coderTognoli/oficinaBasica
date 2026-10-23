@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Gerenciamento de Clientes - AutoMecânica Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>👥 Gestão de Clientes</h2>
+        <p>Cadastre, edite e pesquise clientes. O CPF é armazenado somente como hash Bcrypt.</p>
+    </div>
+    <button class="btn btn-primary" onclick="abrirModal('modalNovoCliente')">+ Novo Cliente</button>
+</div>
+
+<!-- Recurso de Busca por Termo -->
+<div class="search-box-card">
+    <form action="{{ url_for('clientes_view') }}" method="GET" class="search-form">
+        <input type="text" name="busca" value="{{ termo_busca or '' }}" placeholder="Digite nome, e-mail ou telefone para buscar..." required>
+        <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+        {% if termo_busca %}
+            <a href="{{ url_for('clientes_view') }}" class="btn btn-secondary">Limpar Busca</a>
+        {% endif %}
+    </form>
+    {% if termo_busca %}
+        <p class="search-feedback">Mostrando resultados para: <strong>"{{ termo_busca }}"</strong></p>
+    {% endif %}
+</div>
+
+<!-- Listagem Atualizada de Clientes -->
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>Telefone</th>
+                <th>E-mail</th>
+                <th>Data Cadastro</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in clientes %}
+            <tr>
+                <td>#{{ c.id }}</td>
+                <td><strong>{{ c.nome }}</strong><br><small class="text-muted">{{ c.endereco or 'Não informado' }}</small></td>
+                <td>{{ c.telefone or 'Não informado' }}</td>
+                <td>{{ c.email or 'Não informado' }}</td>
+                <td>{{ c.data_cadastro }}</td>
+                <td class="action-buttons">
+                    <button class="btn-edit" onclick='abrirModalEditar({{ c.id }}, {{ c.nome|tojson }}, {{ (c.telefone or "")|tojson }}, {{ (c.email or "")|tojson }}, {{ (c.endereco or "")|tojson }})'>✏️ Editar</button>
+                    <a href="{{ url_for('clientes_excluir', id=c.id) }}" class="btn-delete" onclick="return confirm('Deseja realmente excluir este cliente?');">🗑️</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center">Nenhum cliente encontrado com os critérios fornecidos.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Novo Cliente -->
+<div id="modalNovoCliente" class="modal">
+    <div class="modal-content">
+        <h3>Cadastrar Novo Cliente</h3>
+        <form action="{{ url_for('clientes_novo') }}" method="POST">
+            <div class="form-group">
+                <label>Nome Completo *:</label>
+                <input type="text" name="nome" required>
+            </div>
+            <div class="form-group">
+                <label>CPF (apenas 11 números) *:</label>
+                <input type="text" name="cpf" maxlength="14" placeholder="Ex: 12345678901" required>
+                <small class="form-hint">Validação de 11 dígitos. Será criptografado com Bcrypt no BD.</small>
+            </div>
+            <div class="form-group">
+                <label>Telefone / WhatsApp *:</label>
+                <input type="text" name="telefone" placeholder="(11) 98765-4321" required>
+            </div>
+            <div class="form-group">
+                <label>E-mail *:</label>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Endereço Completo:</label>
+                <input type="text" name="endereco" placeholder="Rua, número, bairro, cidade">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="fecharModal('modalNovoCliente')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar no Banco de Dados</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Editar Cliente -->
+<div id="modalEditarCliente" class="modal">
+    <div class="modal-content">
+        <h3>Editar Cliente</h3>
+        <form id="formEditarCliente" method="POST">
+            <div class="form-group">
+                <label>Nome Completo *:</label>
+                <input type="text" id="edit_nome" name="nome" required>
+            </div>
+            <div class="form-group">
+                <label>Telefone *:</label>
+                <input type="text" id="edit_telefone" name="telefone" required>
+            </div>
+            <div class="form-group">
+                <label>E-mail *:</label>
+                <input type="email" id="edit_email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Endereço:</label>
+                <input type="text" id="edit_endereco" name="endereco">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="fecharModal('modalEditarCliente')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}Agendamento de Serviços - AutoMecânica Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h2>📅 Agendamentos de Serviços</h2>
+        <p>Listagem ordenada por data com todos os dados do cliente e do veículo relacionado.</p>
+    </div>
+    <button class="btn btn-primary" onclick="abrirModal('modalNovoAgendamento')">+ Novo Agendamento</button>
+</div>
+
+<div class="table-container">
+    <table class="data-table">
+        <thead>
+            <tr>
+                <th>Data / Horário</th>
+                <th>Cliente Completo</th>
+                <th>Veículo Completo</th>
+                <th>Serviço / Descrição</th>
+                <th>Status</th>
+                <th>Valor Est.</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in agendamentos %}
+            <tr>
+                <td>
+                    <span class="badge-data">{{ a.data_agendamento }}</span>
+                </td>
+                <td>
+                    <strong>👤 {{ a.cliente_nome }}</strong><br>
+                    <small>📞 {{ a.cliente_telefone or 'Não informado' }}</small><br>
+                    <small class="text-muted">✉️ {{ a.cliente_email or 'Não informado' }}</small><br>
+                    <small class="text-muted">🏠 {{ a.cliente_endereco or 'Não informado' }}</small>
+                </td>
+                <td>
+                    <span class="badge-placa">{{ a.veiculo_placa }}</span><br>
+                    <strong>{{ a.veiculo_marca }} {{ a.veiculo_modelo }}</strong><br>
+                    <small class="text-muted">Ano: {{ a.veiculo_ano }} | Cor: {{ a.veiculo_cor or 'Não informada' }}</small>
+                </td>
+                <td>
+                    <p class="service-desc">{{ a.descricao_servico }}</p>
+                    {% if a.observacoes %}
+                        <small class="text-muted"><em>Obs: {{ a.observacoes }}</em></small>
+                    {% endif %}
+                </td>
+                <td><span class="badge-status status-{{ a.status }}">{{ {'AGENDADO': 'Agendado', 'EM_ANDAMENTO': 'Em andamento', 'CONCLUIDO': 'Concluído', 'CANCELADO': 'Cancelado'}.get(a.status, a.status) }}</span></td>
+                <td>R$ {{ "%.2f"|format(a.valor_estimado) }}</td>
+                <td class="action-buttons">
+                    <!-- Regra de Negócio: Atualizar data do agendamento já cadastrado -->
+                    <button class="btn-edit" onclick="abrirModalAtualizarData({{ a.agendamento_id }}, '{{ a.data_agendamento }}')">⏰ Alterar Data</button>
+                    <a href="{{ url_for('agendamentos_excluir', id=a.agendamento_id) }}" class="btn-delete" onclick="return confirm('Cancelar agendamento?');">🗑️</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7" class="text-center">Nenhum serviço agendado no momento.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Atualizar Data do Agendamento (Regra de Negócio) -->
+<div id="modalAtualizarData" class="modal">
+    <div class="modal-content">
+        <h3>Atualizar Data do Agendamento</h3>
+        <p>Selecione o novo dia e horário para o serviço:</p>
+        <form id="formAtualizarData" method="POST">
+            <div class="form-group">
+                <label>Nova Data e Horário *:</label>
+                <input type="datetime-local" id="nova_data_agendamento" name="nova_data_agendamento" required>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="fecharModal('modalAtualizarData')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar Nova Data no BD</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Novo Agendamento -->
+<div id="modalNovoAgendamento" class="modal">
+    <div class="modal-content">
+        <h3>Novo Agendamento de Serviço</h3>
+        <form action="{{ url_for('agendamentos_novo') }}" method="POST">
+            <div class="form-group">
+                <label>Veículo *:</label>
+                <select name="veiculo_id" required>
+                    <option value="">Selecione um veículo</option>
+                    {% for v in veiculos %}
+                        <option value="{{ v.id }}">{{ v.placa }} - {{ v.marca }} {{ v.modelo }} (Cliente: {{ v.cliente_nome }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Data e Horário do Agendamento *:</label>
+                <input type="datetime-local" name="data_agendamento" required>
+            </div>
+            <div class="form-group">
+                <label>Serviço *:</label>
+                <select name="servico_id" required>
+                    <option value="">Selecione um serviço</option>
+                    {% for servico in servicos %}
+                        <option value="{{ servico.id }}">{{ servico.descricao }} - R$ {{ "%.2f"|format(servico.valor) }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Observações Adicionais:</label>
+                <input type="text" name="observacoes" placeholder="Ex: Cliente aguarda na oficina">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="fecharModal('modalNovoAgendamento')">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Confirmar Agendamento</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

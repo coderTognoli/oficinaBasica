@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Oficina Mecânica - SAEP{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% if usuario_logado %}
+    <header class="app-header">
+        <div class="logo-area">
+            <span class="icon-gear">⚙️</span>
+            <div>
+                <h1>AutoMecânica Pro</h1>
+                <small>Gestão Integrada de Oficina</small>
+            </div>
+        </div>
+        
+        <!-- Funcionalidade Principal: Nome do usuário logado e navegação -->
+        <nav class="nav-links">
+            <a href="{{ url_for('dashboard') }}" class="nav-item">📊 Dashboard</a>
+            <a href="{{ url_for('clientes_view') }}" class="nav-item">👥 Clientes</a>
+            <a href="{{ url_for('veiculos_view') }}" class="nav-item">🚗 Veículos</a>
+            <a href="{{ url_for('agendamentos_view') }}" class="nav-item">📅 Agendamentos</a>
+        </nav>
+
+        <div class="user-panel">
+            <div class="user-info">
+                <span class="user-name">👤 {{ usuario_logado }}</span>
+                <span class="user-role">{{ usuario_cargo }}</span>
+            </div>
+            <!-- Maneira de sair do sistema -->
+            <a href="{{ url_for('logout') }}" class="btn-logout" title="Encerrar Sessão">Sair 🚪</a>
+        </div>
+    </header>
+    {% endif %}
+
+    <main class="container">
+        <!-- Flash Messages (Sucesso / Erro / Info) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            <span>{{ message }}</span>
+                            <button onclick="this.parentElement.remove()" class="close-alert">&times;</button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="app-footer">
+        <p>&copy; 2026 AutoMecânica Pro - Sistema Conforme Normas SAEP & LGPD.</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>
